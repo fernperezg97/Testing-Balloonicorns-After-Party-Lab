@@ -11,23 +11,28 @@ class PartyTests(unittest.TestCase):
         self.client = app.test_client()     # Instantiation of Flask test client. Client set as instance attribute of the test class
         app.config['TESTING'] = True
 
+
     def test_homepage(self):
         result = self.client.get("/")
-        self.assertIn(b"board games, rainbows, and ice cream sundaes", result.data)
+        #("RESULT:", dir(result))
+        self.assertIn(b"board games, rainbows, and ice cream sundaes", result.data) # assertIn means that if test passes, that phrase will show
+
 
     def test_no_rsvp_yet(self):
-        # FIXME: Add a test to show we see the RSVP form, but NOT the
-        # party details
-        print("FIXME")
+        result = self.client.get("/")
+        self.assertIn(b'Oooh! I want to come!', result.data) # checks to make sure "Oooh! I want to come!" phrase is present EXACTLY
+        self.assertNotIn(b'123 Magic Unicorn Way', result.data) 
+
 
     def test_rsvp(self):
         result = self.client.post("/rsvp",
                                   data={"name": "Jane",
                                         "email": "jane@jane.com"},
                                   follow_redirects=True)
-        # FIXME: Once we RSVP, we should see the party details, but
-        # not the RSVP form
-        print("FIXME")
+
+        self.assertIn(b'123 Magic Unicorn Way', result.data)
+        self.assertNotIn(b'Oooh! I want to come!', result.data)
+
 
 
 class PartyTestsDatabase(unittest.TestCase):
@@ -40,23 +45,26 @@ class PartyTestsDatabase(unittest.TestCase):
         app.config['TESTING'] = True
 
         # Connect to test database (uncomment when testing database)
-        # connect_to_db(app, "postgresql:///testdb")
+        connect_to_db(app, "postgresql:///testdb")
 
         # Create tables and add sample data (uncomment when testing database)
-        # db.create_all()
-        # example_data()
+        db.create_all()
+        example_data()
 
     def tearDown(self):
         """Do at end of every test."""
 
         # (uncomment when testing database)
-        # db.session.close()
-        # db.drop_all()
+        db.session.close()
+        db.drop_all()
 
     def test_games(self):
         # FIXME: test that the games page displays the game from example_data()
-        print("FIXME")
+        result = self.client.get("/games")
+        self.assertIn(b"name", result.data)
+        
+        # print("FIXME")
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)
